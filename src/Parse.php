@@ -9,7 +9,7 @@ class Parse
 
     public $variables = [];
     public $onVariable;
-    public $functions = []; // ARCTAN COS SIN TAN ABS EXP LN LOG SQRT SQR INT FRAC TRUNC ROUND ARCSIN ARCCOS SIGN NOT
+    public $functions = [];
     public $onFunction;
 
     private function getIdentity(bool &$kind = null, string &$value = null): bool 
@@ -19,8 +19,9 @@ class Parse
 
         if ($ist) $this->pos++;
 
-        while ((($char = $this->text[$this->pos] ?? false) !== false) && (($ist && ($char != '"')) || ctype_alnum($char) || in_array($char, ['_', '.'])))
+        while ((($char = $this->text[$this->pos] ?? false) !== false) && (($ist && ($char != '"')) || ctype_alnum($char) || in_array($char, ['_', '.']))) {
             $this->pos++;
+        }
 
         if (!$len = $this->pos - $ops) return false;
 
@@ -181,6 +182,7 @@ class Parse
             if ($char == '-') $subTerm = -$subTerm;
             $value += $subTerm;
         }
+        
         return $value;
     }
 
@@ -202,17 +204,25 @@ class Parse
                 case ')': $b--; break;
             }
         }
-        if ($b != 0)
+
+        if ($b != 0) {
             throw new \Exception('Unmatched brackets', 2);
+        }
+
         $i = strpos($formula, '"');
-        if ($i === false)
+
+        if ($i === false) {
             $formula = str_replace(' ', '', strtolower($formula));
-        else {
+        }
+        else 
+        {
             $cleaned = '';
             $l = strlen($formula);
             $s = 0;
             $b = false;
-            do {
+
+            do 
+            {
                 if ($b) $i++;
                 $part = substr($formula, $s, $i - $s);
                 if (!$b) $part = str_replace(' ', '', strtolower($part));
@@ -221,9 +231,13 @@ class Parse
                 $cleaned .= $part;
                 $d = $s + 1;
                 if ($l < $d) break;
-            } while (($i = strpos($formula, '"', $d)) !== false);
+            } 
+
+            while (($i = strpos($formula, '"', $d)) !== false);
+
             if ($l != $s)
                 $cleaned .= str_replace(' ', '', strtolower(substr($formula, $s)));
+
             $formula = $cleaned;
         }
         return $this->perform($formula);
